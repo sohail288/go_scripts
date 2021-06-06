@@ -40,7 +40,7 @@ func main() {
 	var result *Result
 	for receivedCount < len(urls) {
 		result = <-queue
-		fmt.Println(result.Url, result.Response[:10])
+		fmt.Println(result.Url, result.Response[:250])
 		receivedCount += 1
 	}
 	close(queue)
