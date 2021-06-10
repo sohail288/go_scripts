@@ -11,6 +11,7 @@ import (
 	// "io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	// "path/filepath"
 )
@@ -30,7 +31,7 @@ type OpenApiResponse struct {
 }
 
 type OpenApiParameter struct {
-	Name        string `json:"description,omitempty"`
+	Name        string `json:"name,omitempty"`
 	In          string `json:"in,omitempty"`
 	Description string `json:"description,omitempty"`
 }
@@ -65,9 +66,10 @@ func findStringInArray(s string, arr []string) bool {
 }
 
 type ScanResult struct {
-	scanRequest *ScanRequest
-	err         error
-	response    *http.Response
+	scanRequest     *ScanRequest
+	err             error
+	response        *http.Response
+	scannedEndpoint string
 }
 
 type ScanRequest struct {
@@ -84,25 +86,35 @@ func makeRequest(client *http.Client, queue chan *ScanResult, scanRequest *ScanR
 		resp *http.Response
 	)
 	if !findStringInArray(strings.ToLower(scanRequest.method), httpMethods) {
-		queue <- &ScanResult{scanRequest, nil, nil}
+		queue <- &ScanResult{scanRequest, nil, nil, ""}
 		return
 	}
 
 	endpointUrl := fmt.Sprintf("%s%s", scanRequest.serverUrl, scanRequest.path)
 
+	queryParams := url.Values{}
+	// get the query params
+	for _, param := range scanRequest.operationObj.Parameters {
+		queryParams.Set(param.Name, "test")
+	}
+
+	if len(queryParams) > 0 {
+		endpointUrl = fmt.Sprintf("%s?%s", endpointUrl, queryParams.Encode())
+	}
+
 	req, err = http.NewRequest(strings.ToUpper(scanRequest.method), endpointUrl, nil)
 	if err != nil {
-		queue <- &ScanResult{scanRequest, err, nil}
+		queue <- &ScanResult{scanRequest, err, nil, endpointUrl}
 		return
 	}
 
 	resp, err = client.Do(req)
 	if err != nil {
-		queue <- &ScanResult{scanRequest, err, nil}
+		queue <- &ScanResult{scanRequest, err, nil, endpointUrl}
 		return
 	}
 
-	queue <- &ScanResult{scanRequest, nil, resp}
+	queue <- &ScanResult{scanRequest, nil, resp, endpointUrl}
 }
 
 func exitError(err error, msg string) {
@@ -158,7 +170,7 @@ func main() {
 	// wait here to get all the scan results
 	for receivedCount < totalRequests {
 		result = <-queue
-		fmt.Printf("%s %s%s - %s\n", result.scanRequest.method, result.scanRequest.serverUrl, result.scanRequest.path, result.response.Status)
+		fmt.Printf("%s %s - %s\n", result.scanRequest.method, result.scannedEndpoint, result.response.Status)
 		receivedCount += 1
 	}
 	close(queue)

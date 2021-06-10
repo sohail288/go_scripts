@@ -12,7 +12,8 @@
       "get": {
         "operationId": "getGet",
         "parameters": [
-          {"name": "something", "in": "query"}
+          {"name": "something", "in": "query"},
+          {"name": "something2", "in": "query"}
         ],
         "responses": {
           "200": {
@@ -24,6 +25,19 @@
     "/post": {
       "post": {
         "operationId": "postPost",
+        "parameters": [
+          {"name": "something", "in": "query"}
+        ],
+        "responses": {
+          "200": {
+            "description": "get something" 
+          }
+        }
+      }
+    },
+    "/put": {
+      "put": {
+        "operationId": "putPut",
         "parameters": [
           {"name": "something", "in": "query"}
         ],
