@@ -86,6 +86,7 @@ func makeRequest(client *http.Client, queue chan *ScanResult, scanRequest *ScanR
 		resp *http.Response
 	)
 	if !findStringInArray(strings.ToLower(scanRequest.method), httpMethods) {
+		// send a new error
 		queue <- &ScanResult{scanRequest, nil, nil, ""}
 		return
 	}
