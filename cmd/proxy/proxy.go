@@ -68,6 +68,7 @@ func pipeConn(ch chan bool, clientConn *net.Conn, remoteConn *net.Conn) {
   go sender(toClient, clientConn)
   go sender(toRemote, remoteConn)
 
+	for {
   select {
   case fromClient, ok := <-in:
     log.Println("received from client")
@@ -86,6 +87,7 @@ func pipeConn(ch chan bool, clientConn *net.Conn, remoteConn *net.Conn) {
     }
     toClient <- fromRemote
   }
+}
 
 }
 
