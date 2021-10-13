@@ -1,3 +1,7 @@
+/*
+	TODO: the concurrency works but results need to associate a url with response
+	to build up links
+*/
 package main
 
 import (
@@ -192,7 +196,7 @@ func main() {
 	parsedUrl, err := url.Parse(entryUrl)
 
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Unable to process entry: %s"), entryUrl)
+		log.Fatal(fmt.Sprintf("Unable to process entry: %s", entryUrl))
 	}
 	log.Println(parsedUrl.Host)
 
